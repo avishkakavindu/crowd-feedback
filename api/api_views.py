@@ -16,30 +16,20 @@ from .feedback import predict_sentiment
 
 class CrowdAPIView(APIView):
     def post(self, request, *args, **kwargs):
-        image_file = request.FILES.get('image')
+        crowd_count = request.data.get('crowd_count')
         shop_id = request.data.get('shop_id')
-        if not image_file:
-            return HttpResponseBadRequest("Image file is required.")
 
         shop_exists = Shop.objects.filter(id=shop_id).exists()
 
-        if (not shop_exists):
+        if not shop_exists:
             return Response({'error': 'Shop not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        # Save the image file to a temporary location
-        temp_image_path = 'temp_image.jpg'
-        with open(temp_image_path, 'wb') as f:
-            for chunk in image_file.chunks():
-                f.write(chunk)
-
-        # Perform detection on the image
-        annotated_image_path, crowd = detectByImage(temp_image_path)
         shop = Shop.objects.get(id=shop_id)
-        shop.current_crowd = crowd
+        shop.current_crowd = crowd_count
         shop.save()
         
         # Return the annotated image as the API response
-        return FileResponse(open(annotated_image_path, 'rb'), content_type='image/jpeg')
+        return Response({'detail': 'Record saved'})
 
     def get(self, request, *args, **kwargs):
         # Retrieve crowds of all shops
