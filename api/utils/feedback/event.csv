@@ -1,0 +1,16 @@
+location_id, comment, status, product
+5,good shop,1
+6,this is very bad,0
+8,this is good,1
+8,my coffee is better,0
+1,this is very good,1
+10,product is not good,1,15
+23,I dont know,0,12
+1,good,1,1
+
+1,bad,0,2
+1,good,1,2
+1,good,1,2
+sad,1,0,2
+1,1,0,1
+1,1,0,1
