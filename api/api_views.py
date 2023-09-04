@@ -45,19 +45,16 @@ class FeedbackAPIView(APIView):
             product = get_object_or_404(Product, name_readonly=product_name)
 
             top_shops = Shop.objects.annotate(
-                positive_feedback_count=Count('feedback', filter=models.Q(feedback__is_feedback_positive=True,
-                                                                          feedback__product=product))
-            ).order_by('-positive_feedback_count')[:3]
+                average_rating=Avg('feedback__rating',
+                                   filter=models.Q(feedback__is_feedback_positive=True, feedback__product=product))
+            ).order_by('-average_rating')[:3]
 
             top_shops_data = []
             for shop in top_shops:
-                feedbacks = Feedback.objects.filter(shop=shop, product=product, is_feedback_positive=True)
-                average_rating = feedbacks.aggregate(Avg('rating'))['rating__avg']
                 top_shops_data.append({
                     'shop_name': shop.name,
                     'location': shop.location,
-                    'positive_feedback_count': shop.positive_feedback_count,
-                    'average_rating': average_rating
+                    'average_rating': shop.average_rating
                 })
 
             return Response({'top_shops': top_shops_data})
