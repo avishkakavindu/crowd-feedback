@@ -44,17 +44,31 @@ class FeedbackAPIView(APIView):
         try:
             product = get_object_or_404(Product, name_readonly=product_name)
 
-            top_shops = Shop.objects.annotate(
-                average_rating=Avg('feedback__rating',
-                                   filter=models.Q(feedback__is_feedback_positive=True, feedback__product=product))
-            ).order_by('-average_rating')[:3]
+            # Get a list of shops with positive feedback for the product
+            positive_feedback_shops = Shop.objects.filter(feedback__is_feedback_positive=True,
+                                                          feedback__product=product)
 
+            # Calculate scores for each shop based on feedback counts
+            shop_scores = {}
+            for shop in positive_feedback_shops:
+                positive_count = Feedback.objects.filter(shop=shop, product=product, is_feedback_positive=True).count()
+                negative_count = Feedback.objects.filter(shop=shop, product=product, is_feedback_positive=False).count()
+                score = positive_count - negative_count
+                shop_scores[shop] = score
+
+            # Sort the shops by scores in descending order
+            sorted_shops = sorted(shop_scores.items(), key=lambda x: x[1], reverse=True)
+
+            # Get the top N shops
+            top_n_shops = sorted_shops[:3]  # Change 3 to the number of top shops you want
+
+            # Extract relevant data for the top shops
             top_shops_data = []
-            for shop in top_shops:
+            for shop, score in top_n_shops:
                 top_shops_data.append({
                     'shop_name': shop.name,
                     'location': shop.location,
-                    'average_rating': shop.average_rating
+                    'average_rating': score
                 })
 
             return Response({'top_shops': top_shops_data})

@@ -11,7 +11,7 @@ class ProductAdmin(admin.ModelAdmin):
 
 
 class FeedbackAdmin(admin.ModelAdmin):
-    list_display = ('shop', 'product', 'rating')
+    list_display = ('shop', 'product', 'rating', 'is_feedback_positive')
 
 
 # Register models with admin classes
